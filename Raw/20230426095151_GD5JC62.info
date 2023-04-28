@@ -1,0 +1,52 @@
+Step Details
+Info Version: 1.2
+Step name: 
+StartDate (firstEEGtimestamp): 1682495511065
+Device class: ENOBIO
+Communication type: WiFi
+Device ID: NE-Wifi(00:07:80:0D:81:8C)
+Software's version: NIC 2.1.3.0
+Firmware's version: 3031
+Operative system: Windows
+SDCard Filename: NONE
+Additional channel: NONE
+
+EEG Settings
+Total number of channels: 8
+Number of EEG channels: 8
+Number of records of EEG: 507537
+EEG sampling rate: 500 Samples/second
+Effective EEG sampling rate: N/A
+EEG recording configured duration (s): 5400
+Number of packets lost: 0
+Line filter status: OFF
+FIR filter status: OFF
+EOG correction filter status: OFF
+Reference filter status: OFF
+EEG units: nV
+EEG montage: 
+	Channel 1: T7
+	Channel 2: O1
+	Channel 3: C1
+	Channel 4: Fp1
+	Channel 5: O2
+	Channel 6: C2
+	Channel 7: Fp2
+	Channel 8: T8
+Accelerometer data: ON
+
+Number of channels of Accelerometer: 3
+Accelerometer sampling rate: 100 Samples/second
+Accelerometer units: mm/s^2
+
+Trigger information:
+	Code	Description
+	1	hello
+	2	
+	3	
+	4	
+	5	
+	6	
+	7	
+	8	
+	9	
