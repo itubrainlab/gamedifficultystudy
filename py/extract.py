@@ -31,8 +31,8 @@ def extract_features(id):
     scores = {}
     for band in configs['bands']:
         power = epos.compute_psd(fmin=configs[f'{band}_min'], fmax=configs[f'{band}_max'], picks=picks)
-        data = power.get_data().mean(axis=(1,2)) # average over channels and frequencies
-        data_normed = (data - data.mean()) / data.std() # normalize
+        data = power.get_data().mean(axis=2) # average over frequencies - shape: (n_epochs,channels,frequencies)
+        data_normed = (data - data.mean(axis=0)) / data.std(axis=0) # normalize
         scores[band] = data_normed
 
     # Handle labels from annotations

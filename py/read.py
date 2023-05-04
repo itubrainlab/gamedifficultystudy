@@ -71,7 +71,7 @@ def annotate_outofexperiment(raw, df, session):
     raw.set_annotations(annotations)
 
     # Crop raw to before and after experiment
-    raw = raw.crop(tmin=datetime_list[0][0]-1, tmax=datetime_list[-1][1]+1)
+    raw = raw.crop(tmin=datetime_list[0][0], tmax=datetime_list[-1][1])
     return raw
 
 def getTimestamps(df):
