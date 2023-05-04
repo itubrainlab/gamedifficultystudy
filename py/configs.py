@@ -7,7 +7,7 @@ configs = {
 
     'exp_name' : 'test',
     'timestamp' : timestamp,
-    'overwrite' : 0,
+    'overwrite' : 1,
 
     'run_ICA' : 1,
 

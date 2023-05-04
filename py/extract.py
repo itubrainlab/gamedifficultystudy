@@ -29,18 +29,7 @@ def extract_features(id):
     del test_power
 
     scores = {}
-    for band in configs['bands']:
-        power = epos.compute_psd(fmin=configs[f'{band}_min'], fmax=configs[f'{band}_max'], picks=picks)
-        data = power.get_data().mean(axis=2) # average over frequencies - shape: (n_epochs,channels,frequencies)
-        data_normed = (data - data.mean(axis=0)) / data.std(axis=0) # normalize
-        scores[band] = data_normed
-
     # Handle labels from annotations
-    def get_conds(x):
-        if len(x) == 0:
-            return "-/-/-"
-        else:
-            return x[0][2]
     conds = [get_conds(x) for x in epos.get_annotations_per_epoch()]
     game, diff, session = zip(*[c.split('/') for c in conds])
     scores['game'] = game
@@ -48,9 +37,21 @@ def extract_features(id):
     scores['session'] = session
     scores['id'] = id
     scores['timestep'] = np.arange(len(epos))
+
+    # Make a df with bandpower for each epoch
+    bp_dfs = []
+    for band in configs['bands']:
+        power = epos.compute_psd(fmin=configs[f'{band}_min'], fmax=configs[f'{band}_max'], picks=picks)
+        data = power.get_data().mean(axis=2) # average over frequencies - shape: (n_epochs,channels,frequencies)
+        data_normed = (data - data.mean(axis=0)) / data.std(axis=0) # normalize
+        scores['band'] = band
+        for i, ch in enumerate(epos.ch_names[:8]):
+            scores[ch] = data_normed[:,i]
+
+        bp_df = pd.DataFrame(scores)
+        bp_dfs.append(bp_df)
     
-    # make dataframe and save
-    df = pd.DataFrame(scores)
+    df = pd.concat(bp_dfs)
     print(df.head())
     print(df.shape)
     df.to_csv(outfile, index=False)
@@ -98,8 +99,13 @@ def BP_plot(id):
 #     df = df.melt(id_vars=['game', 'difficulty'], var_name='band', value_name='power')
 #     print(df)
 
+def get_conds(x):
+    if len(x) == 0:
+        return "-/-/-"
+    else:
+        return x[0][2]
 
 if __name__ == '__main__':
-    # extract_features(configs['test_id'])
-    BP_plot(configs['test_id'])
+    extract_features(configs['test_id'])
+    # BP_plot(configs['test_id'])
     print('Done!')

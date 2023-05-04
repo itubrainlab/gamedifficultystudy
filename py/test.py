@@ -15,9 +15,12 @@ raw = mne.io.read_raw_fif(prepfile, preload=True).copy()
 
 picks = mne.pick_types(raw.info, eeg=True, eog=False, stim=False, misc=False)
 
+
 epos = mne.make_fixed_length_epochs(raw, duration=1, reject_by_annotation=True,overlap=0.2)
-tester = epos.compute_psd(fmin=8,fmax=12).get_data()
+tester = epos.compute_psd(fmin=8,fmax=12).get_data().mean(axis=2)
+print(epos.ch_names[:8])
 print(tester.shape)
+print(len(epos))
 
 # thresh = 3
 # sum(tester>np.mean(tester)*thresh)

@@ -2,6 +2,5 @@
 *.ipynb
 
 # Ignored directories
-Results/
 __pycache__/
 

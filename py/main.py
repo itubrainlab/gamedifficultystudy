@@ -11,8 +11,11 @@ def process_all():
         print('')
         print(f'Processing {id}')
         print('')
-        make_raw(id)
-        preprocess(id)
+
+        # make_raw(id)
+        
+        # preprocess(id)
+        
         extract_features(id)
 
 def collect_features():
@@ -27,9 +30,8 @@ def collect_features():
     
     
 def main():
-    # process_all()
+    process_all()
     collect_features()
-
 
 if __name__ == '__main__':
     main()
