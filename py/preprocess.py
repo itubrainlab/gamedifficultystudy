@@ -74,7 +74,7 @@ def run_ICA(raw):
 
 
 def test():
-    preprocess('bdaFDd')
+    preprocess(configs['test_id'])
 
 if __name__ == '__main__':
     test()

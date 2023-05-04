@@ -1,20 +1,19 @@
 from datetime import datetime
 from constants import RESULTS_FOLDER
 
-#id = len(list(RESULTS_FOLDER.glob('*')))
 timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 configs = {
 
     'exp_name' : 'test',
     'timestamp' : timestamp,
-    'overwrite' : 1,
+    'overwrite' : 0,
 
     'run_ICA' : 1,
 
     ## Preprocessing
     'l_freq' : 1,
-    'h_freq' : 60, 
+    'h_freq' : 70, 
 
     ## ICA
     'ica_variances_explained' : 0.99,
@@ -36,7 +35,8 @@ configs = {
     'beta_max' : 30,
     'gamma_min' : 30,
     'gamma_max' : 60,
-    
+
+    'test_id' : 'GD5JC6',
 }
 
 # def make_config_file(exp_folder):
