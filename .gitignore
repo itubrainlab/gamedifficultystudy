@@ -1,0 +1,7 @@
+.DS_Store
+*.ipynb
+
+# Ignored directories
+Results/
+__pycache__/
+
