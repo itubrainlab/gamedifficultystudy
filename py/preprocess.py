@@ -6,13 +6,13 @@ from constants import SCRATCH_FOLDER, RAW_FILENAME, RAW_PREP_FILENAME, ICA_FILEN
 from configs import configs
 
 
-def preprocess(id):
-    infile = SCRATCH_FOLDER / RAW_FILENAME.replace('ID', id)
-    outfile = SCRATCH_FOLDER / RAW_PREP_FILENAME.replace('ID', id)
-    ica_file = SCRATCH_FOLDER / ICA_FILENAME.replace('ID', id)
+def preprocess(sid):
+    infile = SCRATCH_FOLDER / RAW_FILENAME.replace('ID', sid)
+    outfile = SCRATCH_FOLDER / RAW_PREP_FILENAME.replace('ID', sid)
+    ica_file = SCRATCH_FOLDER / ICA_FILENAME.replace('ID', sid)
 
     if outfile.exists() and not configs['overwrite']:
-        print(f'{outfile.name} already exists for {id}. Skipping.')
+        print(f'{outfile.name} already exists for {sid}. Skipping.')
         return None
     
     raw = mne.io.read_raw_fif(infile, preload=True).copy()
@@ -27,7 +27,6 @@ def preprocess(id):
     else:
         ica = mne.preprocessing.read_ica(ica_file)
     raw = ica.apply(raw)
-    
     
     raw.save(outfile, overwrite=True)
 

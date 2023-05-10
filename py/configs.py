@@ -9,11 +9,15 @@ configs = {
     'timestamp' : timestamp,
     'overwrite' : 1,
 
-    'run_ICA' : 1,
+    'run_ICA' : 0,
+
+    ## Reading
+    'testing_duration' : 60*10, # seconds
+    'buffer_time' : 1, # seconds
 
     ## Preprocessing
     'l_freq' : 1,
-    'h_freq' : 70, 
+    'h_freq' : 100, 
 
     ## ICA
     'ica_variances_explained' : 0.99,
@@ -24,13 +28,13 @@ configs = {
 
     ## Epoching
     'epo_length': 1,
-    'epo_overlap' : 0.2,
-    'epo_thresh_mult' : 3,
+    'epo_overlap' : 0.1,
+    'epo_thresh_mult' : 10,
 
     ## Bandpower
     'bands' : ['alpha', 'beta', 'gamma'],
-    'alpha_min' : 8, 
-    'alpha_max' : 12,
+    'alpha_min' : 7, 
+    'alpha_max' : 13,
     'beta_min' : 12,
     'beta_max' : 30,
     'gamma_min' : 30,

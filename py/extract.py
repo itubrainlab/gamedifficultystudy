@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 from constants import SCRATCH_FOLDER, RAW_PREP_FILENAME, BANDPOWER_FILENAME
 from configs import configs
 
-def extract_features(id):
-    infile = SCRATCH_FOLDER / RAW_PREP_FILENAME.replace('ID', id)
-    outfile = SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', id)
+def extract_features(sid):
+    infile = SCRATCH_FOLDER / RAW_PREP_FILENAME.replace('ID', sid)
+    outfile = SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', sid)
 
     if outfile.exists() and not configs['overwrite']:
-        print(f'{outfile.name} already exists for {id}. Skipping.')
+        print(f'{outfile.name} already exists for {sid}. Skipping.')
         return None
     
     raw = mne.io.read_raw_fif(infile, preload=True).copy()
@@ -20,22 +20,37 @@ def extract_features(id):
     
     epos = mne.make_fixed_length_epochs(raw, duration=configs['epo_length'], reject_by_annotation=True, overlap=configs['epo_overlap'])
 
-    test_power = epos.compute_psd(fmin=8,fmax=12, picks=picks).get_data().mean(axis=(1,2))
-    good_is = np.where(test_power<np.mean(test_power)*configs['epo_thresh_mult'])[0]
-    num_before = len(epos)
-    epos = epos[good_is]
-    print("\nNumber of epochs after thresholding: ", len(epos), "of", num_before,"\n")
+    # testing_epos = epos[np.array(conds) == 'TESTING']
+    # exp_epos = epos[np.array(conds) != 'TESTING']
 
-    del test_power
+    thresh_power = epos.compute_psd(fmin=8,fmax=12, picks=picks).get_data().mean(axis=(1,2))
+    good_is = np.where(thresh_power<np.mean(thresh_power)*configs['epo_thresh_mult'])[0]
+    epos = epos[good_is]
+
+    # test_power = testing_epos.compute_psd(fmin=8,fmax=12, picks=picks).get_data().mean(axis=(1,2))
+    # good_is = np.where(test_power<np.mean(thresh_power)*configs['epo_thresh_mult'])[0]
+    # testing_epos = testing_epos[good_is]
+    # quarter = int(len(testing_epos)/4)
+    # testing_epos = testing_epos[quarter:-quarter]
 
     scores = {}
     # Handle labels from annotations
-    conds = [get_conds(x) for x in epos.get_annotations_per_epoch()]
-    game, diff, session = zip(*[c.split('/') for c in conds])
+    def get_cond(x):
+        if len(x) == 0:
+            return '-/-/-'
+        else:
+            return x[0][2]
+    exp_conds = [get_cond(x) for x in epos.get_annotations_per_epoch()]
+    uniqs = np.unique(exp_conds)
+    if len(uniqs) < 25:
+        print('BAD number')
+        quit()
+
+    game, diff, session = zip(*[c.split('/') for c in exp_conds if (c != 'TESTING' and c!= 'BAD_QUESTIONNAIRE')])
     scores['game'] = game
     scores['difficulty'] = diff
     scores['session'] = session
-    scores['id'] = id
+    scores['id'] = [sid] * len(epos)
     scores['timestep'] = np.arange(len(epos))
 
     # Make a df with bandpower for each epoch
@@ -43,7 +58,13 @@ def extract_features(id):
     for band in configs['bands']:
         power = epos.compute_psd(fmin=configs[f'{band}_min'], fmax=configs[f'{band}_max'], picks=picks)
         data = power.get_data().mean(axis=2) # average over frequencies - shape: (n_epochs,channels,frequencies)
-        data_normed = (data - data.mean(axis=0)) / data.std(axis=0) # normalize
+
+        # Calc baseline for testing_epos
+        baseline_power = epos.compute_psd(fmin=configs[f'{band}_min'], fmax=configs[f'{band}_max'], picks=picks).get_data().mean(axis=2)
+        baseline_mean = baseline_power.mean(axis=0)
+        baseline_std = baseline_power.std(axis=0)
+
+        data_normed = (data - baseline_mean) / baseline_std # normalize
         scores['band'] = band
         for i, ch in enumerate(epos.ch_names[:8]):
             scores[ch] = data_normed[:,i]
@@ -52,60 +73,9 @@ def extract_features(id):
         bp_dfs.append(bp_df)
     
     df = pd.concat(bp_dfs)
-    print(df.head())
-    print(df.shape)
     df.to_csv(outfile, index=False)
 
-def BP_plot(id):
-    infile = SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', id)
-    df = pd.read_csv(infile)
-    # drop rows with "-" in game column
-    df = df[df['game'] != '-']
-    df = df.groupby(['game', 'difficulty']).mean().reset_index()
-    
-    games = df['game'].unique()
-
-    # Make a grouped bar chart for each band
-    for band in configs['bands']:
-        gmeas = {}
-        for diff in range(1,4):
-            power = df.loc[df["difficulty"] == str(diff), band]
-            gmeas[diff] = power.values
-
-        x = np.arange(len(games))  # the label locations
-        width = 0.2  # the width of the bars
-        multiplier = 0
-
-        fig, ax = plt.subplots(layout='constrained')
-
-        for attribute, measurement in gmeas.items():
-            offset = width * multiplier
-            rects = ax.bar(x + offset, measurement, width, label=attribute)
-            #ax.bar_label(rects, padding=4)
-            multiplier += 1
-
-        # Add some text for labels, title and custom x-axis tick labels, etc.
-        ax.set_ylabel('power')
-        ax.set_title(band)
-        ax.set_xticks(x + width, games)
-        ax.legend(loc='upper left', ncols=3)
-
-    plt.show()
-
-# def BP_plot(id):
-#     infile = SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', id)
-#     df = pd.read_csv(infile)
-#     df = df.groupby(['game', 'difficulty']).mean().reset_index()
-#     df = df.melt(id_vars=['game', 'difficulty'], var_name='band', value_name='power')
-#     print(df)
-
-def get_conds(x):
-    if len(x) == 0:
-        return "-/-/-"
-    else:
-        return x[0][2]
 
 if __name__ == '__main__':
     extract_features(configs['test_id'])
-    # BP_plot(configs['test_id'])
     print('Done!')

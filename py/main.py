@@ -7,22 +7,22 @@ from extract import extract_features
 import pandas as pd
 
 def process_all():
-    for id in SUBJECTS:
+    for sid in SUBJECTS:
         print('')
-        print(f'Processing {id}')
+        print(f'Processing {sid}')
         print('')
 
-        # make_raw(id)
+        # make_raw(sid)
         
-        # preprocess(id)
-        
-        extract_features(id)
+        # preprocess(sid)
+
+        extract_features(sid)
 
 def collect_features():
     dfs = []
-    for id in SUBJECTS:
-        print(f'Collecting features for {id}')
-        dfs.append(pd.read_csv(SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', id)))
+    for sid in SUBJECTS:
+        print(f'Collecting features for {sid}')
+        dfs.append(pd.read_csv(SCRATCH_FOLDER / BANDPOWER_FILENAME.replace('ID', sid)))
 
     df = pd.concat(dfs)
     print(df.head())
@@ -30,7 +30,10 @@ def collect_features():
     
     
 def main():
+    # Individual functions
     process_all()
+    
+    # Collective functions
     collect_features()
 
 if __name__ == '__main__':
