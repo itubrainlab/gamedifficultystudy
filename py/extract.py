@@ -16,22 +16,14 @@ def extract_features(sid):
         return None
     
     raw = mne.io.read_raw_fif(infile, preload=True).copy()
-    picks = mne.pick_types(raw.info, eeg=True, eog=False, stim=False, misc=False)
+    picks = mne.pick_types(raw.info, eeg=True, stim=False, misc=False,)
     
     epos = mne.make_fixed_length_epochs(raw, duration=configs['epo_length'], reject_by_annotation=True, overlap=configs['epo_overlap'])
 
-    # testing_epos = epos[np.array(conds) == 'TESTING']
-    # exp_epos = epos[np.array(conds) != 'TESTING']
 
     thresh_power = epos.compute_psd(fmin=8,fmax=12, picks=picks).get_data().mean(axis=(1,2))
     good_is = np.where(thresh_power<np.mean(thresh_power)*configs['epo_thresh_mult'])[0]
     epos = epos[good_is]
-
-    # test_power = testing_epos.compute_psd(fmin=8,fmax=12, picks=picks).get_data().mean(axis=(1,2))
-    # good_is = np.where(test_power<np.mean(thresh_power)*configs['epo_thresh_mult'])[0]
-    # testing_epos = testing_epos[good_is]
-    # quarter = int(len(testing_epos)/4)
-    # testing_epos = testing_epos[quarter:-quarter]
 
     scores = {}
     # Handle labels from annotations

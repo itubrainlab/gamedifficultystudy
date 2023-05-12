@@ -1,15 +1,9 @@
-from datetime import datetime
-from constants import RESULTS_FOLDER
-
-timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 configs = {
 
-    'exp_name' : 'test',
-    'timestamp' : timestamp,
-    'overwrite' : 1,
-
-    'run_ICA' : 0,
+    ## General
+    'overwrite' : 0,
+    'run_ICA' : 1,
 
     ## Reading
     'testing_duration' : 60*10, # seconds
@@ -42,11 +36,3 @@ configs = {
 
     'test_id' : 'GD5JC6',
 }
-
-# def make_config_file(exp_folder):
-#     config_file = exp_folder / 'config.txt'
-#     with open(config_file, 'w') as f:
-#         for key, value in configs.items():
-#             f.write(f'{key}: {value}\n\n')
-# 
-# exp_folder = RESULTS_FOLDER / f'{configs["exp_name"]}_{timestamp}'

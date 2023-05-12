@@ -3,7 +3,7 @@ import mne
 
 import pandas as pd
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from constants import RAW_NEDF_FILENAME, RAW_FILENAME, RAW_FOLDER, SCRATCH_FOLDER, CSV_FILENAME
 from configs import configs
@@ -17,7 +17,11 @@ def make_raw(sid):
         raw_filename = RAW_NEDF_FILENAME.replace('ID', sid)
         raw_filename = raw_filename.replace('session', session_replace)
 
-        infile = list(RAW_FOLDER.glob(raw_filename))[0]
+        try:
+            infile = list(RAW_FOLDER.glob(raw_filename))[0]
+        except IndexError:
+            print(f'No file found for {sid} session {session}. Skipping.')
+            continue
         outfile = SCRATCH_FOLDER / RAW_FILENAME.replace('ID', sid)
        
         if outfile.exists() and not configs['overwrite']:
@@ -25,6 +29,8 @@ def make_raw(sid):
             return None
 
         raw = mne.io.read_raw_edf(infile).copy()
+
+        # raw = raw.drop_channels('STI 014')
         raw.set_channel_types({'X': 'misc', 'Y': 'misc', 'Z': 'misc'})
 
         # Set montage
@@ -48,7 +54,7 @@ def annotate_outofexperiment(raw, df, session):
     def to_timedelta(timestamp):
         return (datetime.fromtimestamp(timestamp/1000)-begintime).total_seconds()
     
-    begintime = raw.info['meas_date'].replace(tzinfo=None)
+    begintime = raw.info['meas_date'].replace(tzinfo=None) #+ timedelta(hours=2)
 
     # get timestamps from csv, convert to seconds
     timestamps = getTimestamps(df)
@@ -73,19 +79,6 @@ def annotate_outofexperiment(raw, df, session):
     starts, durs, labels = zip(*annotations)
 
     experiment_start = datetime_list[0][0]
-    
-    # if session == '1':
-    #     # Mark testing time
-    #     testing_duration = configs['testing_duration']
-    #     experiment_start = experiment_start - testing_duration
-    #     experiment_start = max(60, experiment_start)
-
-    #     starts = list(starts)
-    #     durs = list(durs)
-    #     labels = list(labels)
-    #     starts.append(experiment_start)
-    #     durs.append(testing_duration)
-    #     labels.append('TESTING')
 
     annotations = mne.Annotations(onset=starts, duration=durs, description=labels)
     raw.set_annotations(annotations)
